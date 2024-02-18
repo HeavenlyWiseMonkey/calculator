@@ -18,10 +18,10 @@ function operate(first, operator, last) {
     else if (operator === '-') {
         return subtract(first, last);
     }
-    else if (operator === '*') {
+    else if (operator === '×') {
         return multiply(first, last);
     }
-    else if (operator === '/') {
+    else if (operator === '÷') {
         return divide(first, last);
     }
 }
@@ -30,11 +30,13 @@ let first;
 let operator;
 let last;
 let displayValue = 0;
+const operators = new Set(['+','-','×','÷']);
 
 const keys = Array.from(document.querySelectorAll('button'));
 const numberKeys = keys.filter((item) => Number.isInteger(Number(item.textContent)));
-const operatorKeys = keys.filter((item) => item.textContent in ['+', '-', '×', '÷']);
+const operatorKeys = keys.filter((item) => operators.has(item.textContent));
 const clearKey = keys.find((item) => item.textContent == 'clear');
+const equalKey = keys.find((item) => item.textContent == '=');
 const display = document.querySelector('.display');
 
 numberKeys.map((item) => item.addEventListener('click', () => {
@@ -50,4 +52,17 @@ numberKeys.map((item) => item.addEventListener('click', () => {
 clearKey.addEventListener('click', () => {
     displayValue = 0;
     display.textContent = 0;
+});
+
+operatorKeys.map((item) => item.addEventListener('click', () => {
+    first = displayValue;
+    operator = item.textContent;
+    displayValue = 0;
+    display.textContent = 0;
+}));
+
+equalKey.addEventListener('click', () => {
+    last = displayValue;
+    displayValue = operate(Number(first), operator, Number(last));
+    display.textContent = displayValue;
 });
