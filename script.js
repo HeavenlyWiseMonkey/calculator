@@ -18,10 +18,10 @@ function operate(first, operator, last) {
     else if (operator === '-') {
         return subtract(first, last);
     }
-    else if (operator === '×') {
+    else if (operator === '×' || operator === 'x') {
         return multiply(first, last);
     }
-    else if (operator === '÷') {
+    else if (operator === '÷' || operator === '/') {
         return divide(first, last);
     }
 }
@@ -34,55 +34,37 @@ function divideByZero(num, operator) {
     return num === 0 && operator === '÷' ? true : false;
 }
 
-let first;
-let operator;
-let last;
-let equationValue = 0;
-let total = 0;
-const operators = new Set(['+','-','×','÷']);
-
-const keys = Array.from(document.querySelectorAll('button'));
-const numberKeys = keys.filter((item) => Number.isInteger(Number(item.textContent)));
-const operatorKeys = keys.filter((item) => operators.has(item.textContent));
-const clearKey = keys.find((item) => item.textContent === 'clear');
-const deleteKey = keys.find((item) => item.textContent === 'delete');
-const equalKey = keys.find((item) => item.textContent === '=');
-const decimalKey = keys.find((item) => item.textContent === '.');
-
-const equation = document.querySelector('.equation');
-const output = document.querySelector('.output');
-
-numberKeys.map((item) => item.addEventListener('click', () => {
+function operation(key) {
     if (!equationValue) {
-        equationValue = item.textContent;
+        equationValue = key;
     }
     else {
         if (equationValue != 0) {
-            equationValue += item.textContent;
+            equationValue += key;
         }
     }
     equation.textContent = equationValue;
-}));
+}
 
-clearKey.addEventListener('click', () => {
+function clear() {
     equationValue = 0;
     equation.textContent = 0;
     outputValue = 0;
     output.textContent = '';
     total = 0;
-});
+}
 
-deleteKey.addEventListener('click', () => {
+function Delete() {
     if (equationValue !== '') {
         equationValue = equationValue.slice(0, -1);
         equation.textContent = equationValue;
     }
-});
+}
 
-operatorKeys.map((item) => item.addEventListener('click', () => {
+function operatorFunction(key) {
     if (!first) {
         first = equationValue;
-        operator = item.textContent;
+        operator = key;
     }
     else {
         if (divideByZero(Number(last), operator)) {
@@ -101,10 +83,10 @@ operatorKeys.map((item) => item.addEventListener('click', () => {
     }
     equationValue = 0;
     equation.textContent = total;
-    operator = item.textContent;
-}));
+    operator = key;
+}
 
-equalKey.addEventListener('click', () => {
+function equals() {
     last = equationValue;
     if (first && last) {
         if (divideByZero(Number(last), operator)) {
@@ -123,11 +105,66 @@ equalKey.addEventListener('click', () => {
         last = 0;
         total = 0;
     }
-});
+}
 
-decimalKey.addEventListener('click', () => {
+function decimal() {
     if (!equationValue.includes('.')) {
         equationValue += decimalKey.textContent;
         equation.textContent = equationValue;
     }
-});
+}
+
+function keyboard(e) {
+    if (e.key >= 0) {
+        operation(e.key);
+    }
+    else if (e.key === 'Escape') {
+        clear();
+    }
+    else if (e.key === 'Delete' || e.key === 'Backspace') {
+        Delete();
+    }
+    else if (operators.has(e.key)) {
+        operatorFunction(e.key);
+    }
+    else if (e.key === '=' || e.key === 'Enter') {
+        equals();
+    }
+    else if (e.key === '.') {
+        decimal();
+    }
+}
+
+let first;
+let operator;
+let last;
+let equationValue = 0;
+let total = 0;
+const operators = new Set(['+','-','×','÷','x','/']);
+
+const keys = Array.from(document.querySelectorAll('button'));
+const numberKeys = keys.filter((item) => Number.isInteger(Number(item.textContent)));
+const operatorKeys = keys.filter((item) => operators.has(item.textContent));
+const clearKey = keys.find((item) => item.textContent === 'clear');
+const deleteKey = keys.find((item) => item.textContent === 'delete');
+const equalKey = keys.find((item) => item.textContent === '=');
+const decimalKey = keys.find((item) => item.textContent === '.');
+
+const equation = document.querySelector('.equation');
+const output = document.querySelector('.output');
+
+const body = document.querySelector('body');
+
+body.addEventListener('keydown', keyboard);
+
+numberKeys.forEach((item) => item.addEventListener('click', () => operation(item.textContent)));
+
+clearKey.addEventListener('click', () => clear());
+
+deleteKey.addEventListener('click', () => Delete());
+
+operatorKeys.map((item) => item.addEventListener('click', () => operatorFunction(item.textContent)));
+
+equalKey.addEventListener('click', () => equals());
+
+decimalKey.addEventListener('click', () => decimal());
