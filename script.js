@@ -26,43 +26,108 @@ function operate(first, operator, last) {
     }
 }
 
+function rounded(num) {
+    return Math.round(num * 1000) / 1000;
+}
+
+function divideByZero(num, operator) {
+    return num === 0 && operator === '÷' ? true : false;
+}
+
 let first;
 let operator;
 let last;
-let displayValue = 0;
+let equationValue = 0;
+let total = 0;
 const operators = new Set(['+','-','×','÷']);
 
 const keys = Array.from(document.querySelectorAll('button'));
 const numberKeys = keys.filter((item) => Number.isInteger(Number(item.textContent)));
 const operatorKeys = keys.filter((item) => operators.has(item.textContent));
-const clearKey = keys.find((item) => item.textContent == 'clear');
-const equalKey = keys.find((item) => item.textContent == '=');
-const display = document.querySelector('.display');
+const clearKey = keys.find((item) => item.textContent === 'clear');
+const deleteKey = keys.find((item) => item.textContent === 'delete');
+const equalKey = keys.find((item) => item.textContent === '=');
+const decimalKey = keys.find((item) => item.textContent === '.');
+
+const equation = document.querySelector('.equation');
+const output = document.querySelector('.output');
 
 numberKeys.map((item) => item.addEventListener('click', () => {
-    if (displayValue === 0) {
-        displayValue = item.textContent;
+    if (!equationValue) {
+        equationValue = item.textContent;
     }
     else {
-        displayValue += item.textContent;
+        if (equationValue != 0) {
+            equationValue += item.textContent;
+        }
     }
-    display.textContent = displayValue;
+    equation.textContent = equationValue;
 }));
 
 clearKey.addEventListener('click', () => {
-    displayValue = 0;
-    display.textContent = 0;
+    equationValue = 0;
+    equation.textContent = 0;
+    outputValue = 0;
+    output.textContent = '';
+    total = 0;
+});
+
+deleteKey.addEventListener('click', () => {
+    if (equationValue !== '') {
+        equationValue = equationValue.slice(0, -1);
+        equation.textContent = equationValue;
+    }
 });
 
 operatorKeys.map((item) => item.addEventListener('click', () => {
-    first = displayValue;
+    if (!first) {
+        first = equationValue;
+        operator = item.textContent;
+    }
+    else {
+        if (divideByZero(Number(last), operator)) {
+            first = 0;
+            total = 0;
+            output.textContent = 'Cannot divide by zero';
+            return;
+        }
+        if (!total) {
+            total = operate(Number(first), operator, Number(last));
+        }
+        else {
+            total = operate(total, operator, Number(last));
+        }
+        total = rounded(total);
+    }
+    equationValue = 0;
+    equation.textContent = total;
     operator = item.textContent;
-    displayValue = 0;
-    display.textContent = 0;
 }));
 
 equalKey.addEventListener('click', () => {
-    last = displayValue;
-    displayValue = operate(Number(first), operator, Number(last));
-    display.textContent = displayValue;
+    last = equationValue;
+    if (first && last) {
+        if (divideByZero(Number(last), operator)) {
+            output.textContent = 'Cannot divide by zero';
+            return;
+        }
+        if (!total) {
+            outputValue = operate(Number(first), operator, Number(last));
+        }
+        else {
+            outputValue = operate(total, operator, Number(last));
+        }
+        outputValue = rounded(outputValue);
+        output.textContent = outputValue;
+        first = 0;
+        last = 0;
+        total = 0;
+    }
+});
+
+decimalKey.addEventListener('click', () => {
+    if (!equationValue.includes('.')) {
+        equationValue += decimalKey.textContent;
+        equation.textContent = equationValue;
+    }
 });
