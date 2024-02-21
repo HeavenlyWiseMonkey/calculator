@@ -67,6 +67,7 @@ function operatorFunction(key) {
         operator = key;
     }
     else {
+        last = equationValue;
         if (divideByZero(Number(last), operator)) {
             first = 0;
             total = 0;
